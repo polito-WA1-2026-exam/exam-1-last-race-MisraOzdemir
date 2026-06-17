@@ -93,7 +93,7 @@ db.serialize(() => {
     }
 
     // games seed data misra (user_id: 1) and emir (user_id: 2)
-    db.run(`INSERT INTO games (user_id, score) VALUES (1, 18)`);
+    db.run(`INSERT INTO games (user_id, score) VALUES (1, 25)`);
     db.run(`INSERT INTO games (user_id, score) VALUES (1, 12)`);
     db.run(`INSERT INTO games (user_id, score) VALUES (2, 20)`);
     db.run(`INSERT INTO games (user_id, score) VALUES (2, 7)`);

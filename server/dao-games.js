@@ -27,3 +27,21 @@ export const getTopScores = () => {
         );
     });
 };
+
+// Randomly selects two different stations as start and end points
+// Takes the stations array as parameter to avoid an extra DB call
+export const getRandomStartEnd = (stations) => {
+    // Pick a random index for start station
+    const startIndex = Math.floor(Math.random() * stations.length);
+
+    let endIndex;
+    do {
+        // Keep picking until we get a different station than start
+        endIndex = Math.floor(Math.random() * stations.length);
+    } while (endIndex === startIndex);
+
+    return {
+        startStation: stations[startIndex],
+        endStation: stations[endIndex]
+    };
+};

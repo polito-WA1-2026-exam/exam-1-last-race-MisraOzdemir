@@ -6,9 +6,7 @@ import { Strategy as LocalStrategy } from 'passport-local';
 
 import { getUserByUsername, getUserById, verifyPassword } from './dao-users.js';
 import { getNetwork, getStations, getLines } from './dao-network.js';
-import { getRandomEvent } from './dao-events.js';
-import { saveGame, getTopScores } from './dao-games.js';
-
+import { saveGame, getTopScores, getRandomStartEnd } from './dao-games.js';
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -101,6 +99,79 @@ app.get('/api/ranking', async (req, res) => {
         res.status(500).json({ message: 'Database error' });
     }
 });
+
+// Game start route — assigns random start/end stations and returns full network data
+app.get('/api/games/start', async (req, res) => {
+    // Only logged in users can start a game
+    if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: 'Not authenticated' });
+    }
+    try {
+        // Fetch raw network rows and station list from DB
+        const rows = await getNetwork();
+        const stations = await getStations();
+
+        // Build structured lines and segments from raw rows
+        const { lines, segments } = buildNetworkData(rows);
+
+        // Pick random start and end stations (different from each other)
+        const { startStation, endStation } = getRandomStartEnd(stations);
+
+        res.json({
+            startStation,
+            endStation,
+            stations,
+            lines,
+            segments
+        });
+    } catch (err) {
+        res.status(500).json({ message: 'Database error' });
+    }
+});
+
+
+function buildNetworkData(rows) {
+    // rows: getNetwork()'ten gelen ham satırlar
+
+    // Adım 1: line_id'ye göre grupla
+    const grouped = {};
+    for (const row of rows) {
+        if (!grouped[row.line_id]) grouped[row.line_id] = [];
+        grouped[row.line_id].push(row);
+    }
+
+    const lines = [];
+    const segmentSet = new Set(); // duplicate önlemek için
+    const segments = [];
+
+    // Adım 2: her hat için...
+    for (const lineId in grouped) {
+        const stops = grouped[lineId]; // bu hattın istasyonları, pozisyona göre sıralı
+
+        // lines dizisini doldur
+        lines.push({
+            id: Number(lineId),
+            name: stops[0].line_name,
+            color: stops[0].color,
+            stations: stops.map(s => ({ id: s.station_id, name: s.station_name }))
+        });
+
+        // Adım 3: ardışık çiftlerden segment üret
+        for (let i = 0; i < stops.length - 1; i++) {
+            const a = stops[i].station_name;
+            const b = stops[i + 1].station_name;
+
+            // duplicate kontrolü — aynı segment iki hatta da olabilir
+            const key = [a, b].sort().join('—');
+            if (!segmentSet.has(key)) {
+                segmentSet.add(key);
+                segments.push({ from: a, to: b });
+            }
+        }
+    }
+
+    return { lines, segments };
+}
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
