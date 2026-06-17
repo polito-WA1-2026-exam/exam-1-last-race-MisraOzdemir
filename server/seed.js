@@ -7,22 +7,29 @@ const db = new sqlite3.Database('lastrace.db', (err) => {
 });
 
 db.serialize(() => {
-    // Lines seed data
+    // Lines seed data — 6 lines
     db.run(`INSERT INTO lines (name, color) VALUES ('M1', '#FF0000')`);
     db.run(`INSERT INTO lines (name, color) VALUES ('M2', '#0000FF')`);
     db.run(`INSERT INTO lines (name, color) VALUES ('M3', '#00FF00')`);
     db.run(`INSERT INTO lines (name, color) VALUES ('M4', '#FFD700')`);
     db.run(`INSERT INTO lines (name, color) VALUES ('M5', '#800080')`);
+    db.run(`INSERT INTO lines (name, color) VALUES ('M6', '#00CED1')`);
 
-    // stations
+    // stations: [name, is_interchange]
+    // is_interchange = 1 means passengers can change lines here
+    // IMPORTANT: a station can be on multiple lines but still NOT be an interchange.
+    // Example below: Lima is on M1 AND M6 but is_interchange = 0,
+    // so changing lines at Lima is INVALID — this is what makes the rule testable.
     const stations = [
-        'Sesto', 'Loreto', 'Lima', 'Duomo', 'Cadorna', 'Pagano',
-        'Cologno', 'Centrale', 'Gioia', 'Maciachini', 'Missori',
-        'Brenta', 'San Babila', "Sant'Ambrogio", 'Solari', 'Bicocca'
+        ['Sesto', 0], ['Loreto', 1], ['Lima', 0], ['Duomo', 1],
+        ['Cadorna', 0], ['Pagano', 0], ['Cologno', 0], ['Centrale', 1],
+        ['Gioia', 1], ['Maciachini', 0], ['Missori', 0], ['Brenta', 0],
+        ['San Babila', 0], ["Sant'Ambrogio", 0], ['Solari', 0], ['Bicocca', 0],
+        ['Romolo', 0], ['Abbiategrasso', 0]
     ];
 
-    for (const name of stations) {
-        db.run(`INSERT INTO stations (name) VALUES (?)`, [name]);
+    for (const [name, isInterchange] of stations) {
+        db.run(`INSERT INTO stations (name, is_interchange) VALUES (?, ?)`, [name, isInterchange]);
     }
 
 
@@ -30,7 +37,8 @@ db.serialize(() => {
     // each entry: [line_id, station_id, position]
     // position = order of station on the line (used to determine neighbors)
     // two stations on the same line with position difference of 1 are neighbors (= a segment)
-    // stations appearing in multiple lines are interchange stations
+    // NOTE: being on multiple lines no longer implies "interchange" — that is now
+    // stored explicitly in the stations table (is_interchange).
     const lineStations = [
         // M1: Sesto → Loreto → Lima → Duomo → Cadorna → Pagano
         [1, 1, 1], [1, 2, 2], [1, 3, 3], [1, 4, 4], [1, 5, 5], [1, 6, 6],
@@ -41,7 +49,9 @@ db.serialize(() => {
         // M4: San Babila → Duomo → Sant'Ambrogio → Solari
         [4, 13, 1], [4, 4, 2], [4, 14, 3], [4, 15, 4],
         // M5: Bicocca → Gioia → Centrale
-        [5, 16, 1], [5, 9, 2], [5, 8, 3]
+        [5, 16, 1], [5, 9, 2], [5, 8, 3],
+        // M6: Lima → Romolo → Abbiategrasso   (Lima also on M1, but NOT an interchange)
+        [6, 3, 1], [6, 17, 2], [6, 18, 3]
     ];
 
     // destructuring: each inner array is split into 3 variables automatically

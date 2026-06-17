@@ -38,50 +38,25 @@ function PlanningPhase({ network, gameData, playerRoute, setPlayerRoute, onSubmi
         return () => clearInterval(interval);
     }, [submitted]);
 
-    // --- SEGMENT SELECTION ---
     const handleSegmentClick = (segment) => {
-        // Don't allow changes after submission
         if (submitted) return;
 
-        // Check if this segment is already in the route — toggle off if so
+        // Check if already selected — toggle off if so
         const alreadySelected = playerRoute.some(
-            s => s.from === segment.from && s.to === segment.to
+            s => s.from === segment.from && s.to === segment.to ||
+                s.from === segment.to && s.to === segment.from
         );
+
         if (alreadySelected) {
+            // Remove from route
             setPlayerRoute(playerRoute.filter(
-                s => !(s.from === segment.from && s.to === segment.to)
+                s => !(s.from === segment.from && s.to === segment.to) &&
+                    !(s.from === segment.to && s.to === segment.from)
             ));
-            return;
+        } else {
+            // Add to route as-is — no direction fixing, no connection check
+            setPlayerRoute([...playerRoute, segment]);
         }
-
-        // If route is empty, first segment must start from startStation
-        if (playerRoute.length === 0) {
-            if (segment.from !== gameData.startStation.name &&
-                segment.to !== gameData.startStation.name) {
-                alert('Route must start from ' + gameData.startStation.name);
-                return;
-            }
-            // Ensure correct direction — from=start, to=next
-            const ordered = segment.from === gameData.startStation.name
-                ? segment
-                : { from: segment.to, to: segment.from };
-            setPlayerRoute([ordered]);
-            return;
-        }
-
-        // Next segment must connect to the last station in the route
-        const lastStation = playerRoute[playerRoute.length - 1].to;
-        if (segment.from !== lastStation && segment.to !== lastStation) {
-            alert('Segment must connect to ' + lastStation);
-            return;
-        }
-
-        // Ensure correct direction
-        const ordered = segment.from === lastStation
-            ? segment
-            : { from: segment.to, to: segment.from };
-
-        setPlayerRoute([...playerRoute, ordered]);
     };
 
     // --- HELPERS ---

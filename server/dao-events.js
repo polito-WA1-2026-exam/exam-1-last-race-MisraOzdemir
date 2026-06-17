@@ -1,10 +1,10 @@
 import db from './db.js';
 
-export const getRandomEvent = () =>{
+export const getEvents = () => {
     return new Promise((resolve, reject) => {
-        db.get(`SELECT * FROM events ORDER BY RANDOM() LIMIT 1`, (err, row) => {
+        db.all(`SELECT * FROM events`, (err, rows) => {
             if (err) reject(err);
-            else resolve(row);
+            else resolve(rows);
         });
     });
-}
+};

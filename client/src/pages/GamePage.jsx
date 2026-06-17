@@ -20,7 +20,9 @@ function GamePage() {
     // Final execution result (steps + score)
     const [executionResult, setExecutionResult] = useState(null);
 
-    // Fetch network and start/end stations when page loads
+    // Each time this increments, useEffect re-runs and fetches a new game
+    const [gameKey, setGameKey] = useState(0);
+
     useEffect(() => {
         fetch('http://localhost:3001/api/games/start', { credentials: 'include' })
             .then(res => res.json())
@@ -36,7 +38,7 @@ function GamePage() {
                 });
             })
             .catch(err => console.error(err));
-    }, []);
+    }, [gameKey]);
 
     // Show loading until data arrives
     if (!network || !gameData) return <p>Loading...</p>;
@@ -70,12 +72,12 @@ function GamePage() {
                 <ResultPhase
                     result={executionResult}
                     onRestart={() => {
-                        // Reset everything and fetch new game
                         setPhase('setup');
                         setPlayerRoute([]);
                         setExecutionResult(null);
                         setNetwork(null);
                         setGameData(null);
+                        setGameKey(prev => prev + 1);
                     }}
                 />}
         </div>
