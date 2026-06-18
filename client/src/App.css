@@ -1,6 +1,6 @@
 /* ===== NAVBAR ===== */
 .app-navbar {
-    background: linear-gradient(135deg, #f386ff, #f2e1fa) !important;
+    background: linear-gradient(85deg, #6b6dfb, #afc6f6) !important;
     padding: 12px 0;
     border-bottom: 3px solid #6366f1;
 }
@@ -18,12 +18,12 @@
 }
 
 .navbar-greeting {
-    color: #a5b4fc;
+    color: #000033;
     font-size: 0.9rem;
 }
 
 .navbar-link {
-    color: #772cf4 !important;
+    color: #000033 !important;
     font-weight: 500;
     transition: color 0.2s;
 }
@@ -34,15 +34,15 @@
 
 .navbar-logout {
     background-color: transparent !important;
-    border: 1.5px solid #f87171 !important;
-    color: #f87171 !important;
+    border: 1.5px solid #000033 !important;
+    color: #000033 !important;
     border-radius: 6px;
     font-size: 0.85rem;
     transition: all 0.2s;
 }
 
 .navbar-logout:hover {
-    background-color: #f87171 !important;
+    background-color: #6366f1 !important;
     color: white !important;
 }
 
@@ -124,7 +124,7 @@
 
 /* ===== INSTRUCTIONS ===== */
 .overview-card {
-    background: linear-gradient(135deg, #8284ff, #8c66fa) !important;
+    background: linear-gradient(135deg, #5e60f8, #7547ff) !important;
     border: none !important;
 }
 
@@ -149,4 +149,20 @@
     background: transparent !important;
     color: #1a1a2e !important;
     border-color: #e0e7ff !important;
+}
+
+/* play button */
+.setup-play-button {
+    background: #8c66fa;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 12px 32px !important;
+    font-weight: 700 !important;
+    font-size: 1rem !important;
+    color: white !important;
+    transition: opacity 0.2s !important;
+}
+
+.setup-play-button:hover {
+    background: #7b4ff4;
 }
