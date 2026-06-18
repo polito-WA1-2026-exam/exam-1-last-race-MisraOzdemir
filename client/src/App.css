@@ -1,6 +1,6 @@
 /* ===== NAVBAR ===== */
 .app-navbar {
-    background-color: #1e1b4b !important;
+    background: linear-gradient(135deg, #f386ff, #f2e1fa) !important;
     padding: 12px 0;
     border-bottom: 3px solid #6366f1;
 }
@@ -23,7 +23,7 @@
 }
 
 .navbar-link {
-    color: #e0e7ff !important;
+    color: #772cf4 !important;
     font-weight: 500;
     transition: color 0.2s;
 }
@@ -120,4 +120,33 @@
 
 .login-button:hover {
     background-color: #4f46e5 !important;
+}
+
+/* ===== INSTRUCTIONS ===== */
+.overview-card {
+    background: linear-gradient(135deg, #8284ff, #8c66fa) !important;
+    border: none !important;
+}
+
+.overview-card .card-title {
+    color: white !important;
+}
+
+.overview-card .card-text {
+    color: #e0e7ff !important;
+}
+
+.light-card {
+    background: linear-gradient(105deg, #e2d9f8, #aebeff) !important;
+    border: 2px solid #e0e7ff !important;
+}
+
+.light-card .card-title {
+    color: #1e1b4b !important;
+}
+
+.light-card .list-group-item {
+    background: transparent !important;
+    color: #1a1a2e !important;
+    border-color: #e0e7ff !important;
 }
