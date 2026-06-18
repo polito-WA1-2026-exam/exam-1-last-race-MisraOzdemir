@@ -290,14 +290,9 @@ function validateRoute(playerRoute, networkRows, startStation, endStation) {
         return { valid: false, reason: 'Wrong start station' };
     }
 
-    // Rule 2: route must end at assigned station (either end of last segment)
-    const lastSegment = playerRoute[playerRoute.length - 1];
-    if (lastSegment.from !== endStation && lastSegment.to !== endStation) {
-        return { valid: false, reason: 'Wrong end station' };
-    }
-// Check segments are connected in sequence
-// Each segment's start must match the previous segment's end
-// We need to figure out direction first based on start station
+    // Check segments are connected in sequence
+    // Each segment's start must match the previous segment's end
+    // We need to figure out direction first based on start station
     let currentStation = startStation;
     for (const segment of playerRoute) {
         // Determine which end of segment connects to currentStation
@@ -309,6 +304,12 @@ function validateRoute(playerRoute, networkRows, startStation, endStation) {
             return { valid: false, reason: `Segment ${segment.from}-${segment.to} not connected to route` };
         }
     }
+
+    // Rule 2: after traversing the route, we must have reached endStation
+    if (currentStation !== endStation) {
+        return { valid: false, reason: 'Wrong end station' };
+    }
+
     // Rule 3a: no segment used more than once
     const usedSegments = new Set();
     for (const segment of playerRoute) {
