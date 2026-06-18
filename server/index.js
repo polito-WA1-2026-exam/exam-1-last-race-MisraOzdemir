@@ -5,7 +5,7 @@ import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import { getUserByUsername, getUserById, verifyPassword } from './dao-users.js';
 import { getNetwork, getStations, getLines } from './dao-network.js';
-import { saveGame, getTopScores, getRandomStartEnd } from './dao-games.js';
+import { saveGame, getTopScores } from './dao-games.js';
 import { getEvents } from './dao-events.js';
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -115,7 +115,7 @@ app.get('/api/games/start', async (req, res) => {
         const { lines, segments } = buildNetworkData(rows);
 
         // Pick random start and end stations (different from each other)
-        const { startStation, endStation } = getRandomStartEnd(stations);
+        const { startStation, endStation } = getRandomStartEnd(stations, segments);
 
         res.json({
             startStation,
@@ -221,20 +221,94 @@ function buildNetworkData(rows) {
     return { lines, segments };
 }
 
+// Picks a random start station and an end station at least 3 segments away
+// Uses BFS to calculate distances from the start station
+function getRandomStartEnd(stations, segments) {
+
+    // Build adjacency map: for each station, list of its neighbors
+    // Metro is bidirectional — if A connects to B, B also connects to A
+    const adjacency = {};
+    for (const segment of segments) {
+        if (!adjacency[segment.from]) adjacency[segment.from] = [];
+        if (!adjacency[segment.to]) adjacency[segment.to] = [];
+        adjacency[segment.from].push(segment.to);
+        adjacency[segment.to].push(segment.from);
+    }
+
+    // Pick a random start station
+    const startStation = stations[Math.floor(Math.random() * stations.length)];
+
+    // --- BFS ---
+    // distances: how many segments away each station is from startStation
+    const distances = {};
+    distances[startStation.name] = 0;
+
+    // Queue holds station names to visit next
+    const queue = [startStation.name];
+
+    while (queue.length > 0) {
+        // Take the first station from the queue
+        const current = queue.shift();
+
+        // Look at each neighbor of current station
+        for (const neighbor of (adjacency[current] || [])) {
+            // Only visit if not already seen
+            if (distances[neighbor] === undefined) {
+                distances[neighbor] = distances[current] + 1;
+                queue.push(neighbor);
+            }
+        }
+    }
+
+    // Filter stations that are at least 3 segments away from start
+    const farEnough = stations.filter(s =>
+        s.name !== startStation.name &&
+        distances[s.name] !== undefined &&
+        distances[s.name] >= 3
+    );
+
+    // If no station is far enough (shouldn't happen with our network), fall back to any other station
+    if (farEnough.length === 0) {
+        const fallback = stations.filter(s => s.name !== startStation.name);
+        const endStation = fallback[Math.floor(Math.random() * fallback.length)];
+        return { startStation, endStation };
+    }
+
+    // Pick a random station from the far enough list
+    const endStation = farEnough[Math.floor(Math.random() * farEnough.length)];
+
+    return { startStation, endStation };
+}
+
 // Validates a player's route against the network rules
 // Returns { valid: true/false, reason: string }
 function validateRoute(playerRoute, networkRows, startStation, endStation) {
 
-    // Rule 1: must start at assigned station
-    if (playerRoute[0].from !== startStation) {
+    // Rule 1: route must start at assigned station (either end of first segment)
+    const firstSegment = playerRoute[0];
+    if (firstSegment.from !== startStation && firstSegment.to !== startStation) {
         return { valid: false, reason: 'Wrong start station' };
     }
 
-    // Rule 2: must end at assigned station
-    if (playerRoute[playerRoute.length - 1].to !== endStation) {
+    // Rule 2: route must end at assigned station (either end of last segment)
+    const lastSegment = playerRoute[playerRoute.length - 1];
+    if (lastSegment.from !== endStation && lastSegment.to !== endStation) {
         return { valid: false, reason: 'Wrong end station' };
     }
-
+// Check segments are connected in sequence
+// Each segment's start must match the previous segment's end
+// We need to figure out direction first based on start station
+    let currentStation = startStation;
+    for (const segment of playerRoute) {
+        // Determine which end of segment connects to currentStation
+        if (segment.from === currentStation) {
+            currentStation = segment.to;
+        } else if (segment.to === currentStation) {
+            currentStation = segment.from;
+        } else {
+            return { valid: false, reason: `Segment ${segment.from}-${segment.to} not connected to route` };
+        }
+    }
     // Rule 3a: no segment used more than once
     const usedSegments = new Set();
     for (const segment of playerRoute) {
