@@ -30,11 +30,16 @@ export const getTopScores = () => {
 
 // Randomly selects two different stations as start and end points
 // Takes the stations array as parameter to avoid an extra DB call
-// BURAYI GERİ EKLEEEE
-
 export const getRandomStartEnd = (stations) => {
-    // TEMPORARY: fixed start/end for testing
-    const start = stations.find(s => s.name === 'Sesto');
-    const end = stations.find(s => s.name === 'Abbiategrasso');
-    return { startStation: start, endStation: end };
+    const startIndex = Math.floor(Math.random() * stations.length);
+
+    let endIndex;
+    do {
+        endIndex = Math.floor(Math.random() * stations.length);
+    } while (endIndex === startIndex);
+
+    return {
+        startStation: stations[startIndex],
+        endStation: stations[endIndex]
+    };
 };
