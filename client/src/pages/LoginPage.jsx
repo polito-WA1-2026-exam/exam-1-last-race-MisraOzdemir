@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Form, Button, Alert } from 'react-bootstrap';
+import { Form, Button, Alert } from 'react-bootstrap';
 import { useUser } from '../contexts/UserContext';
 
 function LoginPage() {
@@ -32,29 +32,43 @@ function LoginPage() {
     };
 
     return (
-        <Container className="mt-5" style={{ maxWidth: '400px' }}>
-            <h2>Login</h2>
-            {error && <Alert variant="danger">{error}</Alert>}
-            <Form onSubmit={handleLogin}>
-                <Form.Group className="mb-3">
-                    <Form.Label>Username</Form.Label>
-                    <Form.Control
-                        type="text"
-                        value={username}
-                        onChange={e => setUsername(e.target.value)}
-                    />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                    <Form.Label>Password</Form.Label>
-                    <Form.Control
-                        type="password"
-                        value={password}
-                        onChange={e => setPassword(e.target.value)}
-                    />
-                </Form.Group>
-                <Button type="submit" variant="primary">Login</Button>
-            </Form>
-        </Container>
+        <div className="login-page">
+            <div className="login-card">
+                <div className="login-header">
+                    <span className="login-emoji">🚇</span>
+                    <h1 className="login-title">Last Race</h1>
+                    <p className="login-subtitle">Sign in to start your journey</p>
+                </div>
+
+                {error && <Alert variant="danger" className="mb-3">{error}</Alert>}
+
+                <Form onSubmit={handleLogin}>
+                    <Form.Group className="mb-3">
+                        <Form.Label className="login-label">Username</Form.Label>
+                        <Form.Control
+                            className="login-input"
+                            type="text"
+                            value={username}
+                            onChange={e => setUsername(e.target.value)}
+                            placeholder="Enter your username"
+                        />
+                    </Form.Group>
+                    <Form.Group className="mb-4">
+                        <Form.Label className="login-label">Password</Form.Label>
+                        <Form.Control
+                            className="login-input"
+                            type="password"
+                            value={password}
+                            onChange={e => setPassword(e.target.value)}
+                            placeholder="Enter your password"
+                        />
+                    </Form.Group>
+                    <Button className="login-button" type="submit">
+                        Login →
+                    </Button>
+                </Form>
+            </div>
+        </div>
     );
 }
 
