@@ -5,6 +5,7 @@ import GamePage from './pages/GamePage';
 import RankingPage from './pages/RankingPage';
 import {UserProvider, useUser} from "./contexts/UserContext.jsx";
 import AppNavbar from "./components/Navbar.jsx";
+import './App.css';
 
 function ProtectedRoute({ children }) {
     const { user } = useUser();
