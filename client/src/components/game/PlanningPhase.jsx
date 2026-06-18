@@ -43,19 +43,31 @@ function PlanningPhase({ network, gameData, playerRoute, setPlayerRoute, onSubmi
 
         // Check if already selected — toggle off if so
         const alreadySelected = playerRoute.some(
-            s => s.from === segment.from && s.to === segment.to ||
-                s.from === segment.to && s.to === segment.from
+            s => (s.from === segment.from && s.to === segment.to) ||
+                (s.from === segment.to && s.to === segment.from)
         );
-
         if (alreadySelected) {
             // Remove from route
             setPlayerRoute(playerRoute.filter(
-                s => !(s.from === segment.from && s.to === segment.to) &&
-                    !(s.from === segment.to && s.to === segment.from)
+                s => !((s.from === segment.from && s.to === segment.to) ||
+                    (s.from === segment.to && s.to === segment.from))
             ));
+            return;
+        }
+
+        if (playerRoute.length === 0) {
+            // First segment — from must be start station
+            const ordered = segment.from === gameData.startStation.name
+                ? segment
+                : { from: segment.to, to: segment.from };
+            setPlayerRoute([ordered]);
         } else {
-            // Add to route as-is — no direction fixing, no connection check
-            setPlayerRoute([...playerRoute, segment]);
+            // Next segment — from must connect to last station
+            const lastStation = playerRoute[playerRoute.length - 1].to;
+            const ordered = segment.from === lastStation
+                ? segment
+                : { from: segment.to, to: segment.from };
+            setPlayerRoute([...playerRoute, ordered]);
         }
     };
 
@@ -65,6 +77,19 @@ function PlanningPhase({ network, gameData, playerRoute, setPlayerRoute, onSubmi
         playerRoute.some(s => s.from === segment.from && s.to === segment.to) ||
         playerRoute.some(s => s.from === segment.to && s.to === segment.from);
 
+    const isClickable = (segment) => {
+        if (isSelected(segment)) return true; // already selected, can deselect
+
+        if (playerRoute.length === 0) {
+            // Only segments containing start station
+            return segment.from === gameData.startStation.name ||
+                segment.to === gameData.startStation.name;
+        }
+
+        // Only segments connecting to last station in route
+        const lastStation = playerRoute[playerRoute.length - 1].to;
+        return segment.from === lastStation || segment.to === lastStation;
+    };
     // Timer color — red when under 15 seconds
     const timerVariant = timeLeft <= 15 ? 'danger' : 'primary';
 
@@ -107,20 +132,16 @@ function PlanningPhase({ network, gameData, playerRoute, setPlayerRoute, onSubmi
                     <h5>Segments (click to add)</h5>
                     <ListGroup>
                         {network.segments.map((segment, index) => {
-                            // Check if this segment contains the start station
-                            const containsStart = playerRoute.length === 0 && (
-                                segment.from === gameData.startStation.name ||
-                                segment.to === gameData.startStation.name
-                            );
-
                             return (
                                 <ListGroup.Item
                                     key={index}
-                                    action
-                                    // Selected = green, contains start = yellow, normal = default
-                                    variant={isSelected(segment) ? 'success' : containsStart ? 'warning' : ''}
-                                    onClick={() => handleSegmentClick(segment)}
-                                    style={{ cursor: 'pointer' }}
+                                    action={isClickable(segment)}
+                                    variant={isSelected(segment) ? 'success' : ''}
+                                    onClick={() => isClickable(segment) && handleSegmentClick(segment)}
+                                    style={{
+                                        cursor: isClickable(segment) ? 'pointer' : 'not-allowed',
+                                        opacity: isClickable(segment) || isSelected(segment) ? 1 : 0.4
+                                    }}
                                 >
                                     {segment.from} — {segment.to}
                                 </ListGroup.Item>
@@ -129,19 +150,21 @@ function PlanningPhase({ network, gameData, playerRoute, setPlayerRoute, onSubmi
                     </ListGroup>
                 </Col>
 
-                {/* Right: player's built route so far */}
+                {/* Right: player's built route as a single flowing path */}
                 <Col md={4}>
                     <h5>Your Route</h5>
                     {playerRoute.length === 0
                         ? <p className="text-muted">No segments selected yet</p>
                         : (
-                            <ListGroup>
-                                {playerRoute.map((segment, index) => (
-                                    <ListGroup.Item key={index} variant="success">
-                                        {segment.from} → {segment.to}
-                                    </ListGroup.Item>
-                                ))}
-                            </ListGroup>
+                            <div className="p-3 border rounded bg-light">
+                                <p className="mb-0" style={{ wordBreak: 'break-word' }}>
+                                    {/* First station + each subsequent 'to' station joined with arrows */}
+                                    {playerRoute[0].from}
+                                    {playerRoute.map((segment, index) => (
+                                        <span key={index}> → {segment.to}</span>
+                                    ))}
+                                </p>
+                            </div>
                         )
                     }
                     <Button
