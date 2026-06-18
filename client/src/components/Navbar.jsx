@@ -27,6 +27,7 @@ function AppNavbar() {
                     {user ? (
                         <>
                             <span className="navbar-greeting">Hi, {user.username}</span>
+                            <Nav.Link as={Link} to="/" className="navbar-link">Instructions</Nav.Link>
                             <Nav.Link as={Link} to="/game" className="navbar-link">Game</Nav.Link>
                             <Nav.Link as={Link} to="/ranking" className="navbar-link">Ranking</Nav.Link>
                             <Button className="navbar-logout" size="sm" onClick={handleLogout}>
