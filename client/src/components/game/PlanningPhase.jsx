@@ -115,24 +115,12 @@ function PlanningPhase({ network, gameData, playerRoute, setPlayerRoute, onSubmi
             </Row>
 
             <Row>
-                {/* Left: station list (no lines — just names) */}
-                <Col md={4}>
-                    <h5>Stations</h5>
-                    <ListGroup>
-                        {network.stations.map(station => (
-                            <ListGroup.Item key={station.id}>
-                                {station.name}
-                            </ListGroup.Item>
-                        ))}
-                    </ListGroup>
-                </Col>
-
-                {/* Middle: segment list — clickable */}
-                <Col md={4}>
-                    <h5>Segments (click to add)</h5>
-                    <ListGroup>
-                        {network.segments.map((segment, index) => {
-                            return (
+                {/* Segments — scrollable */}
+                <Col md={6}>
+                    <h5 className="mb-3">Segments</h5>
+                    <div className="segment-scroll">
+                        <ListGroup>
+                            {network.segments.map((segment, index) => (
                                 <ListGroup.Item
                                     key={index}
                                     action={isClickable(segment)}
@@ -145,14 +133,14 @@ function PlanningPhase({ network, gameData, playerRoute, setPlayerRoute, onSubmi
                                 >
                                     {segment.from} — {segment.to}
                                 </ListGroup.Item>
-                            );
-                        })}
-                    </ListGroup>
+                            ))}
+                        </ListGroup>
+                    </div>
                 </Col>
 
-                {/* Right: player's built route as a single flowing path */}
-                <Col md={4}>
-                    <h5>Your Route</h5>
+                {/* Your Route */}
+                <Col md={6}>
+                    <h5 className="mb-3">Your Route</h5>
                     {playerRoute.length === 0
                         ? <p className="text-muted">No segments selected yet</p>
                         : (
@@ -167,9 +155,9 @@ function PlanningPhase({ network, gameData, playerRoute, setPlayerRoute, onSubmi
                             </div>
                         )
                     }
+
                     <Button
-                        variant="primary"
-                        className="mt-3 w-100"
+                        className="mt-3 w-100 setup-play-btn"
                         onClick={handleSubmit}
                         disabled={submitted || playerRoute.length === 0}
                     >

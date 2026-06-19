@@ -16,7 +16,7 @@ function SetupPhase({ network, onStart }) {
                     />
                 </Col>
 
-                {/* Sağ: hat kartları ve buton */}
+                {/* right: line cards and  button */}
                 <Col md={6}>
                     {network.lines.map(line => (
                         <Card key={line.id} style={{ borderLeft: `4px solid ${line.color}`, marginBottom: '12px' }}>

@@ -166,3 +166,25 @@
 .setup-play-button:hover {
     background: #7b4ff4;
 }
+
+/* planning */
+.segment-scroll {
+    max-height: 400px;
+    overflow-y: auto;
+    border-radius: 8px;
+    border: 1px solid #e9d5ff;
+}
+
+.segment-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.segment-scroll::-webkit-scrollbar-track {
+    background: #f3e8ff;
+    border-radius: 8px;
+}
+
+.segment-scroll::-webkit-scrollbar-thumb {
+    background: #a855f7;
+    border-radius: 8px;
+}
