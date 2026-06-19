@@ -4,7 +4,7 @@ import session from 'express-session';
 import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import { getUserByUsername, getUserById, verifyPassword } from './dao-users.js';
-import { getNetwork, getStations, getLines } from './dao-network.js';
+import { getNetwork, getStations} from './dao-network.js';
 import { saveGame, getTopScores } from './dao-games.js';
 import { getEvents } from './dao-events.js';
 const app = express();
@@ -181,7 +181,7 @@ app.post('/api/games/validate', async (req, res) => {
 function buildNetworkData(rows) {
     // rows: getNetwork()'ten gelen ham satırlar
 
-    // Adım 1: line_id'ye göre grupla
+    // Step 1: group with line_id
     const grouped = {};
     for (const row of rows) {
         if (!grouped[row.line_id]) grouped[row.line_id] = [];
@@ -189,14 +189,14 @@ function buildNetworkData(rows) {
     }
 
     const lines = [];
-    const segmentSet = new Set(); // duplicate önlemek için
+    const segmentSet = new Set(); // prevent duplicates like A-B and B-A being counted separately
     const segments = [];
 
-    // Adım 2: her hat için...
+    // Step 2: for every line
     for (const lineId in grouped) {
-        const stops = grouped[lineId]; // bu hattın istasyonları, pozisyona göre sıralı
+        const stops = grouped[lineId]; // station list for this line, in order of position
 
-        // lines dizisini doldur
+        // fill lines array with line info and its stations
         lines.push({
             id: Number(lineId),
             name: stops[0].line_name,
@@ -204,12 +204,12 @@ function buildNetworkData(rows) {
             stations: stops.map(s => ({ id: s.station_id, name: s.station_name }))
         });
 
-        // Adım 3: ardışık çiftlerden segment üret
+        // Step 3: generate segments from consecutive stations on the same line
         for (let i = 0; i < stops.length - 1; i++) {
             const a = stops[i].station_name;
             const b = stops[i + 1].station_name;
 
-            // duplicate kontrolü — aynı segment iki hatta da olabilir
+            // duplicate control — same segment can appear in multiple lines
             const key = [a, b].sort().join('—');
             if (!segmentSet.has(key)) {
                 segmentSet.add(key);
@@ -238,7 +238,7 @@ function getRandomStartEnd(stations, segments) {
     // Pick a random start station
     const startStation = stations[Math.floor(Math.random() * stations.length)];
 
-    // --- BFS ---
+    //  BFS to find distances from startStation to all others
     // distances: how many segments away each station is from startStation
     const distances = {};
     distances[startStation.name] = 0;
@@ -284,7 +284,7 @@ function getRandomStartEnd(stations, segments) {
 // Returns { valid: true/false, reason: string }
 function validateRoute(playerRoute, networkRows, startStation, endStation) {
 
-    // Rule 1: route must start at assigned station (either end of first segment)
+    // route must start at assigned station (either end of first segment)
     const firstSegment = playerRoute[0];
     if (firstSegment.from !== startStation && firstSegment.to !== startStation) {
         return { valid: false, reason: 'Wrong start station' };
@@ -305,12 +305,12 @@ function validateRoute(playerRoute, networkRows, startStation, endStation) {
         }
     }
 
-    // Rule 2: after traversing the route, we must have reached endStation
+    // after traversing the route, we must have reached endStation
     if (currentStation !== endStation) {
         return { valid: false, reason: 'Wrong end station' };
     }
 
-    // Rule 3a: no segment used more than once
+    // no segment used more than once
     const usedSegments = new Set();
     for (const segment of playerRoute) {
         const key = [segment.from, segment.to].sort().join('-');
@@ -334,17 +334,19 @@ function validateRoute(playerRoute, networkRows, startStation, endStation) {
             segmentLines[key].push(curr.line_id);
         }
     }
-
-    // Build interchange set from the explicit is_interchange flag.
-    // A station may be on multiple lines but still NOT be an interchange,
-    // so we read the flag instead of counting lines.
+    // if a station is on multiple lines this means it's an interchange station
+    const stationLines = {};
+    for (const row of networkRows) {
+        if (!stationLines[row.station_name]) stationLines[row.station_name] = new Set();
+        stationLines[row.station_name].add(row.line_id);
+    }
     const interchanges = new Set(
-        networkRows
-            .filter(row => row.is_interchange === 1)
-            .map(row => row.station_name)
+        Object.entries(stationLines)
+            .filter(([name, lines]) => lines.size > 1)
+            .map(([name]) => name)
     );
 
-    // Rule 3: validate each segment
+    // validate each segment
     let currentLine = null;
 
     for (const segment of playerRoute) {

@@ -13,35 +13,33 @@ db.serialize(() => {
     db.run(`INSERT INTO lines (name, color) VALUES ('M4', '#FFD700')`);
     db.run(`INSERT INTO lines (name, color) VALUES ('M5', '#800080')`);
 
-    // stations: [name, is_interchange]
-    // is_interchange = 1 means passengers can change lines here
-    // IMPORTANT: a station can be on multiple lines but still NOT be an interchange.
+    // stations: [name]
     const stations = [
-        ['Sesto', 0],           // 1  M1
-        ['Loreto', 1],          // 2  M1+M2 interchange
-        ['Lima', 1],            // 3  M1+M5 interchange
-        ['Duomo', 1],           // 4  M1+M3+M4 interchange
-        ['Cadorna', 0],         // 5  M1
-        ['Pagano', 0],          // 6  M1
-        ['Molino', 0],          // 7  M1
-        ['Cologno', 0],         // 8  M2
-        ['Centrale', 1],        // 9  M2+M3+M5 interchange
-        ['Gioia', 1],           // 10 M2+M5 interchange
-        ['Famagosta', 0],       // 11 M2
-        ['Maciachini', 0],      // 12 M3
-        ['Missori', 0],         // 13 M3
-        ['Brenta', 0],          // 14 M3
-        ['Lodi', 0],            // 15 M3
-        ['San Babila', 0],      // 16 M4
-        ["Sant'Ambrogio", 0],   // 17 M4
-        ['Solari', 0],          // 18 M4
-        ['Romolo', 0],          // 19 M4
-        ['Bicocca', 0],         // 20 M5
-        ['Bignami', 0],         // 21 M5
+        ['Sesto'],
+        ['Loreto'],
+        ['Lima'],
+        ['Duomo'],
+        ['Cadorna'],
+        ['Pagano'],
+        ['Molino'],
+        ['Cologno'],
+        ['Centrale'],
+        ['Gioia'],
+        ['Famagosta'],
+        ['Maciachini'],
+        ['Missori'],
+        ['Brenta'],
+        ['Lodi'],
+        ['San Babila'],
+        ["Sant'Ambrogio"],
+        ['Solari'],
+        ['Romolo'],
+        ['Bicocca'],
+        ['Bignami'],
     ];
 
-    for (const [name, isInterchange] of stations) {
-        db.run(`INSERT INTO stations (name, is_interchange) VALUES (?, ?)`, [name, isInterchange]);
+    for (const [name] of stations) {
+        db.run(`INSERT INTO stations (name) VALUES (?)`, [name]);
     }
 
     // line_stations: [line_id, station_id, position]
