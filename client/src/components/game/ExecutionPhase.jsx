@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Container, Badge, ListGroup, Spinner } from 'react-bootstrap';
 
-function ExecutionPhase({ playerRoute, gameData, onFinish }) {
+function ExecutionPhase({ playerRoute, onFinish }) {
     // Steps returned from backend (each step has event, effect, coins)
     const [steps, setSteps] = useState([]);
 
@@ -11,17 +11,22 @@ function ExecutionPhase({ playerRoute, gameData, onFinish }) {
     // Loading while waiting for backend response
     const [loading, setLoading] = useState(true);
 
+    // Guard against StrictMode running this effect twice (which would POST
+    // /validate twice and save two games for a single playthrough)
+    const validated = useRef(false);
+
     // --- FETCH VALIDATION FROM BACKEND ---
     useEffect(() => {
+        if (validated.current) return;
+        validated.current = true;
+
         fetch('http://localhost:3001/api/games/validate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
-            body: JSON.stringify({
-                playerRoute,
-                startStation: gameData.startStation.name,
-                endStation: gameData.endStation.name
-            })
+            // Only the route is sent — the server already knows the assigned
+            // start/end stations from the session, so it doesn't trust the client
+            body: JSON.stringify({ playerRoute })
         })
             .then(res => res.json())
             .then(data => {

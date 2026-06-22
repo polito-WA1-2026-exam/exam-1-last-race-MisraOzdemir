@@ -62,7 +62,6 @@ function GamePage() {
             {phase === 'execution' &&
                 <ExecutionPhase
                     playerRoute={playerRoute}
-                    gameData={gameData}
                     onFinish={(result) => {
                         setExecutionResult(result);
                         setPhase('result');

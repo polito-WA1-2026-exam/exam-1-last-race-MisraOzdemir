@@ -117,6 +117,11 @@ app.get('/api/games/start', async (req, res) => {
         // Pick random start and end stations (different from each other)
         const { startStation, endStation } = getRandomStartEnd(stations, segments);
 
+        // Store the assigned stations server-side so validation can trust them
+        // (the client cannot tamper with the session)
+        req.session.startStation = startStation.name;
+        req.session.endStation = endStation.name;
+
         res.json({
             startStation,
             endStation,
@@ -134,11 +139,18 @@ app.post('/api/games/validate', async (req, res) => {
         return res.status(401).json({ message: 'Not authenticated' });
     }
 
-    const { playerRoute, startStation, endStation } = req.body;
+    const { playerRoute } = req.body;
 
     // Basic input validation
     if (!playerRoute || !Array.isArray(playerRoute) || playerRoute.length === 0) {
         return res.status(400).json({ message: 'Invalid route' });
+    }
+
+    // Use the start/end assigned by the server (stored in the session at /start),
+    // never values sent by the client — this prevents the player from cheating
+    const { startStation, endStation } = req.session;
+    if (!startStation || !endStation) {
+        return res.status(400).json({ message: 'No active game' });
     }
 
     try {
