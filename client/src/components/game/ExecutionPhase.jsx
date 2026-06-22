@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Container, Badge, ListGroup, Spinner } from 'react-bootstrap';
+import trainIcon from '../../assets/train-icon.png';
 
 function ExecutionPhase({ playerRoute, onFinish }) {
     // Steps returned from backend (each step has event, effect, coins)
@@ -87,7 +88,10 @@ function ExecutionPhase({ playerRoute, onFinish }) {
             {/* Header — keeps the screen lively and shows live progress */}
             <div className="mb-4">
                 <div className="d-flex justify-content-between align-items-center mb-1">
-                    <h2 className="mb-0">🚇 Executing Route</h2>
+                    <h2 className="mb-0">
+                        <img src={trainIcon} alt="Train Icon" style={{ height: '32px', marginRight: '10px', verticalAlign: 'middle' }} />
+                        Executing Route
+                    </h2>
                     <Badge bg="warning" text="dark" style={{ fontSize: '1.1rem', padding: '8px 12px' }}>
                         {currentCoins} 🪙
                     </Badge>
@@ -115,9 +119,9 @@ function ExecutionPhase({ playerRoute, onFinish }) {
                         position: 'absolute', top: '50%',
                         left: `${(currentStep / steps.length) * 100}%`,
                         transform: 'translate(-50%, -50%)',
-                        transition: 'left 0.9s ease', fontSize: '1.6rem'
+                        transition: 'left 0.9s ease'
                     }}>
-                        🚆
+                        <img src={trainIcon} alt="Train" style={{ height: '32px', display: 'block' }} />
                     </div>
                 </div>
                 <div className="d-flex justify-content-between">

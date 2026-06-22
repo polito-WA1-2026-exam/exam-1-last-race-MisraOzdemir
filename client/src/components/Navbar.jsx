@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "../contexts/UserContext.jsx";
 import { Navbar, Nav, Container, Button } from "react-bootstrap";
+import trainIcon from "../assets/train-icon.png";
 
 function AppNavbar() {
     const { user, setUser } = useUser();
@@ -20,7 +21,8 @@ function AppNavbar() {
             <Container>
                 {/* Brand — metro emoji + game name */}
                 <Navbar.Brand as={Link} to="/" className="navbar-brand-custom">
-                    🚇 Last Race
+                    <img src={trainIcon} alt="Train Logo" style={{ height: '28px', marginRight: '8px', verticalAlign: 'middle' }} />
+                    Last Race
                 </Navbar.Brand>
 
                 <Nav className="ms-auto d-flex align-items-center gap-3">

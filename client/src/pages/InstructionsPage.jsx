@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Container, Card, ListGroup, Badge, Button, Row, Col } from 'react-bootstrap';
 import { useUser } from '../contexts/UserContext';
+import trainIcon from '../assets/train-icon.png';
 
 function InstructionsPage() {
     const { user } = useUser();
@@ -9,7 +10,10 @@ function InstructionsPage() {
     return (
         <Container className="py-4" style={{ maxWidth: '900px', overflowY: 'auto' }}>
             <div className="text-center mb-4">
-                <h2 className="fw-bold">🚇 How to Play</h2>
+                <h2 className="fw-bold">
+                    <img src={trainIcon} alt="Train Icon" style={{ height: '32px', marginRight: '10px', verticalAlign: 'middle' }} />
+                    How to Play
+                </h2>
                 <p className="text-muted">Memorize the map, plan your route, survive the journey!</p>
             </div>
 

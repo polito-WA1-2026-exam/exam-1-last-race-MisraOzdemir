@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Form, Button, Alert } from 'react-bootstrap';
 import { useUser } from '../contexts/UserContext';
+import trainIcon from '../assets/train-icon.png';
 
 function LoginPage() {
     const [username, setUsername] = useState('');
@@ -35,7 +36,7 @@ function LoginPage() {
         <div className="login-page">
             <div className="login-card">
                 <div className="login-header">
-                    <span className="login-emoji">🚇</span>
+                    <img src={trainIcon} alt="Train Logo" style={{ height: '3.5rem', display: 'block', margin: '0 auto 12px auto' }} />
                     <h1 className="login-title">Last Race</h1>
                     <p className="login-subtitle">Sign in to start your journey</p>
                 </div>
