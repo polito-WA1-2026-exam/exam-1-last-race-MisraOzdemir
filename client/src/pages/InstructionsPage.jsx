@@ -36,19 +36,19 @@ function InstructionsPage() {
                             <ListGroup variant="flush">
                                 <ListGroup.Item className="d-flex gap-3 align-items-start py-3">
                                     <Badge style={{ background: '#6366f1', minWidth: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}>1</Badge>
-                                    <div><strong>Setup</strong> — Study the full network map with all lines and connections.</div>
+                                    <div><strong>Setup:</strong> Study the full network map with all lines and connections.</div>
                                 </ListGroup.Item>
                                 <ListGroup.Item className="d-flex gap-3 align-items-start py-3">
                                     <Badge bg="warning" text="dark" style={{ minWidth: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}>2</Badge>
-                                    <div><strong>Planning</strong> — 90 seconds to build your route. Lines hidden — memory only!</div>
+                                    <div><strong>Planning:</strong> 90 seconds to build your route. Lines hidden — memory only!</div>
                                 </ListGroup.Item>
                                 <ListGroup.Item className="d-flex gap-3 align-items-start py-3">
                                     <Badge bg="info" style={{ minWidth: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}>3</Badge>
-                                    <div><strong>Execution</strong> — Route validated. Random events affect your coins each stop.</div>
+                                    <div><strong>Execution:</strong> Route validated. Random events affect your coins each stop.</div>
                                 </ListGroup.Item>
                                 <ListGroup.Item className="d-flex gap-3 align-items-start py-3">
                                     <Badge bg="success" style={{ minWidth: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}>4</Badge>
-                                    <div><strong>Result</strong> — Final score shown. Play again to beat your best!</div>
+                                    <div><strong>Result:</strong> Final score shown. Play again to beat your best!</div>
                                 </ListGroup.Item>
                             </ListGroup>
                         </Card.Body>
