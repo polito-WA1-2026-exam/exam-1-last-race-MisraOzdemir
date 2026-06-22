@@ -78,9 +78,54 @@ function ExecutionPhase({ playerRoute, onFinish }) {
         );
     }
 
+    // Coins shown live in the header: the last revealed step's total, or the
+    // starting 20 before any step is revealed
+    const currentCoins = currentStep > 0 ? steps[currentStep - 1].coins : 20;
+
     return (
         <Container className="py-4">
-            <h2 className="mb-4">Executing Route</h2>
+            {/* Header — keeps the screen lively and shows live progress */}
+            <div className="mb-4">
+                <div className="d-flex justify-content-between align-items-center mb-1">
+                    <h2 className="mb-0">🚇 Executing Route</h2>
+                    <Badge bg="warning" text="dark" style={{ fontSize: '1.1rem', padding: '8px 12px' }}>
+                        {currentCoins} 🪙
+                    </Badge>
+                </div>
+                <p className="text-muted mb-3">
+                    Riding through your route — each stop triggers a random event that changes your coins.
+                </p>
+                {/* Train moving along the route line — slides right each step */}
+                <div style={{ position: 'relative', height: '32px', padding: '0 12px' }}>
+                    {/* full track (remaining part) */}
+                    <div style={{
+                        position: 'absolute', top: '50%', left: 0, right: 0,
+                        height: '4px', background: '#dee2e6', borderRadius: '2px',
+                        transform: 'translateY(-50%)'
+                    }} />
+                    {/* traveled part */}
+                    <div style={{
+                        position: 'absolute', top: '50%', left: 0,
+                        width: `${(currentStep / steps.length) * 100}%`,
+                        height: '4px', background: '#0dcaf0', borderRadius: '2px',
+                        transform: 'translateY(-50%)', transition: 'width 0.9s ease'
+                    }} />
+                    {/* the train */}
+                    <div style={{
+                        position: 'absolute', top: '50%',
+                        left: `${(currentStep / steps.length) * 100}%`,
+                        transform: 'translate(-50%, -50%)',
+                        transition: 'left 0.9s ease', fontSize: '1.6rem'
+                    }}>
+                        🚆
+                    </div>
+                </div>
+                <div className="d-flex justify-content-between">
+                    <small className="fw-bold">{steps[0].from}</small>
+                    <small className="text-muted">Stop {Math.min(currentStep, steps.length)} / {steps.length}</small>
+                    <small className="fw-bold">{steps[steps.length - 1].to}</small>
+                </div>
+            </div>
 
             <ListGroup>
                 {/* Only show steps up to currentStep */}
@@ -100,6 +145,19 @@ function ExecutionPhase({ playerRoute, onFinish }) {
                         </div>
                     </ListGroup.Item>
                 ))}
+
+                {/* Pending step — shows the upcoming segment while its random event
+                    is being "rolled", so the wait feels like progress, not a freeze */}
+                {currentStep < steps.length && (
+                    <ListGroup.Item className="d-flex justify-content-between align-items-center text-muted">
+                        <div>
+                            <strong>{steps[currentStep].from} → {steps[currentStep].to}</strong>
+                            <br />
+                            <small>On the way — waiting for what happens next…</small>
+                        </div>
+                        <Spinner animation="grow" size="sm" variant="secondary" />
+                    </ListGroup.Item>
+                )}
             </ListGroup>
         </Container>
     );
