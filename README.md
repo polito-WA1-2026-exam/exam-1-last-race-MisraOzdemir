@@ -64,7 +64,12 @@
 - `pingu`, password `789`
 
 ## Use of AI Tools
-AI (Claude) was used as a coding assistant: to review the project against the requirements, to discuss design approaches
-(e.g., making the server authoritative for the assigned start/end stations, and creating/seeding the database automatically at server startup),
-to help with some UI layout in the planning and execution phases. Every suggestion was read and tested.
-Additionally, I used Gemini to create map images (full one and stations-only one) 
+During this project, I used Gemini to generate map images and Claude Online Chat as coding assistant. 
+I mainly used them to better understand the requirements, break the project into smaller tasks, 
+and check whether my implementation followed the expected structure. I generated code snippets for specific tasks
+such as API calls, state management, and component structure.
+I also used AI to review my code for possible issues, improve my understanding of best practices, 
+and guide me while designing algorithms such as route handling and game flow logic. In addition,
+I benefited from AI for general frontend improvements, especially in CSS and UI layout decisions.
+All suggestions were carefully reviewed, tested, and adapted into my own code, rather than being 
+directly copied.
