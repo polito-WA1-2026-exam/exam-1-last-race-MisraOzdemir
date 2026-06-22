@@ -10,6 +10,16 @@ function PlanningPhase({ network, gameData, playerRoute, setPlayerRoute, onSubmi
     // Prevent multiple submissions
     const [submitted, setSubmitted] = useState(false);
 
+    // Randomized segment list to show in UI — initialized only once when component mounts
+    const [shuffledSegments] = useState(() => {
+        const arr = [...network.segments];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    });
+
     // --- SUBMIT ---
     const handleSubmit = () => {
         if (submitted) return;
@@ -163,7 +173,7 @@ function PlanningPhase({ network, gameData, playerRoute, setPlayerRoute, onSubmi
                     <h5 className="mb-3">Segments</h5>
                     <div className="segment-scroll">
                         <ListGroup>
-                            {network.segments.map((segment, index) => {
+                            {shuffledSegments.map((segment, index) => {
                                 const selected = isSelected(segment);
                                 const clickable = isClickable(segment);
                                 return (
