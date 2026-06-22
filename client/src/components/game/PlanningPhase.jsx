@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Button, Container, Row, Col, Badge, ListGroup } from 'react-bootstrap';
+import { Button, Container, Row, Col, Badge, ListGroup, CloseButton } from 'react-bootstrap';
+import emptyMap from '../../assets/empty-map.png';
+
 
 function PlanningPhase({ network, gameData, playerRoute, setPlayerRoute, onSubmit }) {
     // Timer state — counts down from 90
@@ -38,31 +40,20 @@ function PlanningPhase({ network, gameData, playerRoute, setPlayerRoute, onSubmi
         return () => clearInterval(interval);
     }, [submitted]);
 
-    const handleSegmentClick = (segment) => {
+    // --- ADD a segment to the route (clicking a row only adds, not removes) ---
+    const handleSelect = (segment) => {
         if (submitted) return;
-
-        // Check if already selected — toggle off if so
-        const alreadySelected = playerRoute.some(
-            s => (s.from === segment.from && s.to === segment.to) ||
-                (s.from === segment.to && s.to === segment.from)
-        );
-        if (alreadySelected) {
-            // Remove from route
-            setPlayerRoute(playerRoute.filter(
-                s => !((s.from === segment.from && s.to === segment.to) ||
-                    (s.from === segment.to && s.to === segment.from))
-            ));
-            return;
-        }
+        // Already selected or not reachable from the current end → ignore the click
+        if (isSelected(segment) || !isClickable(segment)) return;
 
         if (playerRoute.length === 0) {
-            // First segment — from must be start station
+            // First segment starts at the assigned start station
             const ordered = segment.from === gameData.startStation.name
                 ? segment
                 : { from: segment.to, to: segment.from };
             setPlayerRoute([ordered]);
         } else {
-            // Next segment — from must connect to last station
+            // Next segment it starts at the current last station
             const lastStation = playerRoute[playerRoute.length - 1].to;
             const ordered = segment.from === lastStation
                 ? segment
@@ -71,36 +62,54 @@ function PlanningPhase({ network, gameData, playerRoute, setPlayerRoute, onSubmi
         }
     };
 
-    // --- HELPERS ---
-    // Check if a segment is currently selected
-    const isSelected = (segment) =>
-        playerRoute.some(s => s.from === segment.from && s.to === segment.to) ||
-        playerRoute.some(s => s.from === segment.to && s.to === segment.from);
+    // --- REMOVE only the last segment of the route ---
+    const handleRemoveLast = () => {
+        if (submitted) return;
+        setPlayerRoute(playerRoute.slice(0, -1));
+    };
 
+    // --- HELPERS ---
+    // Is this segment currently part of the route?
+    const isSelected = (segment) =>
+        playerRoute.some(s =>
+            (s.from === segment.from && s.to === segment.to) ||
+            (s.from === segment.to && s.to === segment.from)
+        );
+
+    // Is this segment the last one added? (only this one can be removed)
+    const isLastSelected = (segment) => {
+        if (playerRoute.length === 0) return false;
+        const last = playerRoute[playerRoute.length - 1];
+        return (last.from === segment.from && last.to === segment.to) ||
+            (last.from === segment.to && last.to === segment.from);
+    };
+
+    // Can this segment be added right now? (already-selected ones can't be re-added)
     const isClickable = (segment) => {
-        if (isSelected(segment)) return true; // already selected, can deselect
+        if (isSelected(segment)) return false;
 
         if (playerRoute.length === 0) {
-            // Only segments containing start station
+            // Only segments touching the start station
             return segment.from === gameData.startStation.name ||
                 segment.to === gameData.startStation.name;
         }
 
-        // Only segments connecting to last station in route
+        // Only segments connecting to the last station in the route
         const lastStation = playerRoute[playerRoute.length - 1].to;
         return segment.from === lastStation || segment.to === lastStation;
     };
+
     // Timer color — red when under 15 seconds
     const timerVariant = timeLeft <= 15 ? 'danger' : 'primary';
 
     return (
         <Container className="py-4">
 
-            {/* Header: start/end stations and timer */}
+            {/* Header: title, assigned stations and timer */}
             <Row className="mb-4 align-items-center">
                 <Col>
-                    <h2>Plan Your Route</h2>
-                    <p>
+                    <h2 className="mb-1">Plan Your Route</h2>
+                    <p className="mb-0">
                         <strong>From:</strong> {gameData.startStation.name}
                         {' → '}
                         <strong>To:</strong> {gameData.endStation.name}
@@ -115,37 +124,21 @@ function PlanningPhase({ network, gameData, playerRoute, setPlayerRoute, onSubmi
             </Row>
 
             <Row>
-                {/* Segments — scrollable */}
+                {/* LEFT: station-only map + the route being built */}
                 <Col md={6}>
-                    <h5 className="mb-3">Segments</h5>
-                    <div className="segment-scroll">
-                        <ListGroup>
-                            {network.segments.map((segment, index) => (
-                                <ListGroup.Item
-                                    key={index}
-                                    action={isClickable(segment)}
-                                    variant={isSelected(segment) ? 'success' : ''}
-                                    onClick={() => isClickable(segment) && handleSegmentClick(segment)}
-                                    style={{
-                                        cursor: isClickable(segment) ? 'pointer' : 'not-allowed',
-                                        opacity: isClickable(segment) || isSelected(segment) ? 1 : 0.4
-                                    }}
-                                >
-                                    {segment.from} — {segment.to}
-                                </ListGroup.Item>
-                            ))}
-                        </ListGroup>
-                    </div>
-                </Col>
+                    <img
+                        src={emptyMap}
+                        alt="Metro stations (no lines)"
+                        className="img-fluid rounded shadow-sm mb-4 d-block mx-auto"
+                        style={{ maxHeight: '320px', width: 'auto' }}
+                    />
 
-                {/* Your Route */}
-                <Col md={6}>
-                    <h5 className="mb-3">Your Route</h5>
+                    <h5 className="mb-2">Your Route</h5>
                     {playerRoute.length === 0
                         ? <p className="text-muted">No segments selected yet</p>
                         : (
-                            <div className="p-3 border rounded bg-light">
-                                <p className="mb-0" style={{ wordBreak: 'break-word' }}>
+                            <div className="p-3 border rounded bg-light" style={{ minHeight: '90px' }}>
+                                <p className="mb-0" style={{ wordBreak: 'break-word', fontSize: '1.1rem' }}>
                                     {/* First station + each subsequent 'to' station joined with arrows */}
                                     {playerRoute[0].from}
                                     {playerRoute.map((segment, index) => (
@@ -157,12 +150,51 @@ function PlanningPhase({ network, gameData, playerRoute, setPlayerRoute, onSubmi
                     }
 
                     <Button
-                        className="mt-3 w-100 setup-play-btn"
+                        className="mt-3 w-100 setup-play-button"
                         onClick={handleSubmit}
                         disabled={submitted || playerRoute.length === 0}
                     >
                         Submit Route
                     </Button>
+                </Col>
+
+                {/* RIGHT: scrollable list of all segments */}
+                <Col md={6}>
+                    <h5 className="mb-3">Segments</h5>
+                    <div className="segment-scroll">
+                        <ListGroup>
+                            {network.segments.map((segment, index) => {
+                                const selected = isSelected(segment);
+                                const clickable = isClickable(segment);
+                                return (
+                                    <ListGroup.Item
+                                        key={index}
+                                        action={clickable}
+                                        variant={selected ? 'success' : ''}
+                                        onClick={() => handleSelect(segment)}
+                                        className="d-flex justify-content-between align-items-center"
+                                        style={{
+                                            cursor: clickable ? 'pointer' : 'default',
+                                            opacity: clickable || selected ? 1 : 0.4
+                                        }}
+                                    >
+                                        <span>{segment.from} — {segment.to}</span>
+
+                                        {/* Only the last selected segment can be removed */}
+                                        {isLastSelected(segment) && !submitted && (
+                                            <CloseButton
+                                                aria-label="Remove last segment"
+                                                onClick={(e) => {
+                                                    e.stopPropagation(); // don't trigger the row click
+                                                    handleRemoveLast();
+                                                }}
+                                            />
+                                        )}
+                                    </ListGroup.Item>
+                                );
+                            })}
+                        </ListGroup>
+                    </div>
                 </Col>
             </Row>
         </Container>
