@@ -1,48 +1,70 @@
-# Exam #N: "Exam Title"
-## Student: s123456 LASTNAME FIRSTNAME 
+# Exam #1: "Last Race"
+## Student: s358966 OZDEMIR MISRA NUR
 
 ## React Client Application Routes
 
-- Route `/`: page content and purpose
-- Route `/something/:param`: page content and purpose, param specification
-- ...
+- Route `/`: Instructions page. Explains how to play; for logged-in users it also shows a "Play Now" button. The network map is **not** shown to anonymous visitors.
+- Route `/login`: Login form (username + password).
+- Route `/game`: The game itself, running through its four phases (setup, planning, execution, result). Protected: redirects to `/login` if not authenticated.
+- Route `/ranking`: General ranking with the best score of each registered user. Protected: redirects to `/login` if not authenticated.
 
 ## API Server
 
-- POST `/api/something`
-  - request parameters and request body content
-  - response body content
-- GET `/api/something`
-  - request parameters
-  - response body content
-- POST `/api/something`
-  - request parameters and request body content
-  - response body content
-- ...
+- POST `/api/login`
+  - request body: `{ username, password }`
+  - response body: `{ id, username }` on success, `401` on wrong credentials.
+- POST `/api/logout`
+  - no parameters; clears the session.
+  - response body: `{ message }`.
+- GET `/api/ranking` (auth required)
+  - no parameters.
+  - response body: array of `{ username, best_score }`, ordered by best score descending.
+- GET `/api/games/start` (auth required)
+  - no parameters; randomly assigns a start and a destination station (at least 3 segments apart) and stores them in the session.
+  - response body: `{ startStation, endStation, stations, lines, segments }` (stations/lines for the map, segments as `{ from, to }` pairs).
+- POST `/api/games/validate` (auth required)
+  - request body: `{ playerRoute: [{ from, to }, ...] }`. The start/end stations are read from the session, not from the client.
+  - response body: `{ valid: false, finalScore: 0 }` if the route is invalid/incomplete, otherwise `{ valid: true, steps: [{ from, to, event, effect, coins }], finalScore }`. The game result is saved server-side.
 
 ## Database Tables
 
-- Table `users` - contains xx yy zz
-- Table `something` - contains ww qq ss
-- ...
+- Table `users` - registered users: `id`, `username`, `password` (scrypt hash), `salt`.
+- Table `stations` - the metro stations: `id`, `name`.
+- Table `lines` - the metro lines: `id`, `name`, `color`.
+- Table `line_stations` - which stations belong to which line and in which order: `line_id`, `station_id`, `position`. (Interchange stations are derived from this table.)
+- Table `events` - the random events of a segment: `id`, `description`, `effect` (-4..+4).
+- Table `games` - one row per played game: `id`, `user_id`, `score`.
 
 ## Main React Components
 
-- `ListOfSomething` (in `List.js`): component purpose and main functionality
-- `GreatButton` (in `GreatButton.js`): component purpose and main functionality
-- ...
-
-(only _main_ components, minor ones may be skipped)
+- `App` (in `App.jsx`): defines the routes and wraps everything in the user context and router; `ProtectedRoute` guards the authenticated pages.
+- `UserProvider` / `useUser` (in `contexts/UserContext.jsx`): holds the logged-in user state and shares it across the app.
+- `AppNavbar` (in `components/Navbar.jsx`): top navigation bar; shows links and logout when logged in.
+- `GamePage` (in `pages/GamePage.jsx`): orchestrates the game, fetches a new game and switches between the four phase components.
+- `SetupPhase` (in `components/game/SetupPhase.jsx`): shows the full network map with all lines and connections.
+- `PlanningPhase` (in `components/game/PlanningPhase.jsx`): station-only map, assigned stations, 90-second timer and the segment list to build the route.
+- `ExecutionPhase` (in `components/game/ExecutionPhase.jsx`): validates the route and reveals each step with its random event and the updated coin total.
+- `ResultPhase` (in `components/game/ResultPhase.jsx`): shows the final score and a "Play Again" button.
+- `LoginPage` / `InstructionsPage` / `RankingPage` (in `pages/`): login form, game instructions, and the ranking table.
 
 ## Screenshot
+![Login Page](./img/login.png)
+![Instructions](./img/instructions.png)
+![Setup / Map Phase](./img/setup.png)
+![During a game](./img/game.png)
+![Execution of the game](./img/execution.png)
+![Result of the game](./img/result.png)
+![Ranking](./img/ranking.png)
 
-![Screenshot](./img/screenshot.jpg)
 
 ## Users Credentials
 
-- username, password (plus any other requested info)
-- username, password (plus any other requested info)
+- `misra`, password `123` (has played games)
+- `emir`, password `456` (has played games)
+- `pingu`, password `789`
 
 ## Use of AI Tools
-Briefly describe whether you used any AI tools (e.g., ChatGPT, GitHub Copilot, Claude) while working on this project, for which purposes (e.g., clarifying concepts, debugging, generating code), and how you verified or adapted their output.
-If you did not use any AI tools, simply state so.
+AI (Claude) was used as a coding assistant: to review the project against the requirements, to discuss design approaches
+(e.g., making the server authoritative for the assigned start/end stations, and creating/seeding the database automatically at server startup),
+to help with some UI layout in the planning and execution phases. Every suggestion was read and tested.
+Additionally, I used Gemini to create map images (full one and stations-only one) 
