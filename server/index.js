@@ -64,28 +64,6 @@ app.post('/api/logout', (req, res) => {
         res.json({ message: 'Logged out successfully' });
     });
 });
-// 3- session check route
-app.get('/api/session', (req, res) => {
-    if (req.isAuthenticated()) {
-        res.json({ id: req.user.id, username: req.user.username });
-    } else {
-        res.status(401).json({ message: 'Not authenticated' });
-    }
-});
-
-// Network routes
-app.get('/api/network', async (req, res) => {
-    // check if user is logged in, if not return 401 - authentication required
-    if (!req.isAuthenticated()) {
-        return res.status(401).json({ message: 'Not authenticated' });
-    }
-    try {
-        const network = await getNetwork();
-        res.json(network);
-    } catch (err) {
-        res.status(500).json({ message: 'Database error' });
-    }
-});
 
 app.get('/api/ranking', async (req, res) => {
     // check if user is logged in, if not return 401 - authentication required
