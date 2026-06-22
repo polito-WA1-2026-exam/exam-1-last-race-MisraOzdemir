@@ -40,7 +40,7 @@ function InstructionsPage() {
                                 </ListGroup.Item>
                                 <ListGroup.Item className="d-flex gap-3 align-items-start py-3">
                                     <Badge bg="warning" text="dark" style={{ minWidth: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}>2</Badge>
-                                    <div><strong>Planning:</strong> 90 seconds to build your route. Lines hidden — memory only!</div>
+                                    <div><strong>Planning:</strong> 90 seconds to build your route. Lines hidden memory only!</div>
                                 </ListGroup.Item>
                                 <ListGroup.Item className="d-flex gap-3 align-items-start py-3">
                                     <Badge bg="info" style={{ minWidth: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}>3</Badge>
