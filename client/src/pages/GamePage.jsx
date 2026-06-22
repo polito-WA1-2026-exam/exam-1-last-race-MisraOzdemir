@@ -1,15 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import SetupPhase from "../components/game/SetupPhase.jsx";
 import PlanningPhase from "../components/game/PlanningPhase.jsx";
 import ExecutionPhase from "../components/game/ExecutionPhase.jsx";
 import ResultPhase from "../components/game/ResultPhase.jsx";
+import { STATIC_NETWORK } from "../constants/network.js";
 
 function GamePage() {
     // Which phase we're in
     const [phase, setPhase] = useState('setup');
-
-    // Full network data from backend
-    const [network, setNetwork] = useState(null);
 
     // Start and end stations assigned by server
     const [gameData, setGameData] = useState(null);
@@ -20,40 +18,40 @@ function GamePage() {
     // Final execution result (steps + score)
     const [executionResult, setExecutionResult] = useState(null);
 
-    // Each time this increments, useEffect re-runs and fetches a new game
-    const [gameKey, setGameKey] = useState(0);
+    // Guard to prevent multiple quick clicks on the play button
+    const isStarting = useRef(false);
 
-    useEffect(() => {
+    // Fetches a fresh game (new start/end stations) when the user clicks "Ready to Play"
+    const handleStartGame = () => {
+        if (isStarting.current) return;
+        isStarting.current = true;
+
         fetch('http://localhost:3001/api/games/start', { credentials: 'include' })
             .then(res => res.json())
             .then(data => {
-                setNetwork({
-                    stations: data.stations,
-                    lines: data.lines,
-                    segments: data.segments
-                });
                 setGameData({
                     startStation: data.startStation,
                     endStation: data.endStation
                 });
+                setPhase('planning');
             })
-            .catch(err => console.error(err));
-    }, [gameKey]);
-
-    // Show loading until data arrives
-    if (!network || !gameData) return <p>Loading...</p>;
+            .catch(err => console.error(err))
+            .finally(() => {
+                isStarting.current = false;
+            });
+    };
 
     // Render the correct phase
     return (
         <div>
             {phase === 'setup' &&
                 <SetupPhase
-                    network={network}
-                    onStart={() => setPhase('planning')}
+                    network={STATIC_NETWORK}
+                    onStart={handleStartGame}
                 />}
             {phase === 'planning' &&
                 <PlanningPhase
-                    network={network}
+                    network={STATIC_NETWORK}
                     gameData={gameData}
                     playerRoute={playerRoute}
                     setPlayerRoute={setPlayerRoute}
@@ -74,9 +72,7 @@ function GamePage() {
                         setPhase('setup');
                         setPlayerRoute([]);
                         setExecutionResult(null);
-                        setNetwork(null);
-                        setGameData(null);
-                        setGameKey(prev => prev + 1);
+                        setGameData(null); // Clear gameData for the new game setup
                     }}
                 />}
         </div>
